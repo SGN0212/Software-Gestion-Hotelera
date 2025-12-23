@@ -1,0 +1,78 @@
+@startuml
+
+actor Conserje
+participant "UI- Reservar habitacion" as UIR
+participant "Gestor de reservas" as GDR
+participant "ReservasDAO" as ResDAO
+
+
+Conserje -> UIR: Solicita reservar habitaciones
+activate UIR
+UIR -> Conserje: Navega a CU-05
+deactivate UIR
+alt Habitaciones disponibles
+  loop Mientras el conserje selecciones habitaciones
+  Conserje -> UIR: Selecciona habitaciones
+  activate UIR
+  UIR -> UIR: f:=verificarEstadoHabitaciones(listaHabitaciones[])
+    alt Fallo verificacion
+    UIR -> Conserje: Mostrar mensaje de fallo varificacion
+    end
+    UIR -> Conserje: Mostrar pantalla con los colores cambiados
+    deactivate UIR
+  end
+Conserje -> UIR: Presionar boton de confirmacion
+activate UIR
+
+
+UIR -> Conserje: Mostrar listado de reservas con mensaje de confirmacion
+deactivate UIR
+Conserje -> UIR: Responde confirmacion
+activate UIR
+  alt Confirmar
+  UIR -> Conserje: Mostrar formulario de nombre de reserva
+  deactivate UIR
+    loop Mientras campos incompletos
+    Conserje -> UIR: Rellena campos
+    activate UIR
+    UIR -> UIR: Verificar campos completos
+      alt Campos incompletos
+      UIR -> Conserje: Mostrar mensaje de error en el campo faltante
+      end
+    end
+    
+  UIR -> GDR: f:=crearReservas(Lista<ReservaDTO>)
+  deactivate UIR
+  activate GDR
+  loop para cada habitacion recervada
+  create Reserva
+  GDR -> Reserva: <<create>>
+  GDR -> Reserva: setIdReserva(reservaDTO.idReserva)
+  GDR -> Reserva: setFechaInicio(reservaDTO.fechaInicio)
+  GDR -> Reserva: setFechaFin(reservaDTO.fechaFin)
+  GDR -> Reserva: setEstado(reservaDTO.estado)
+  GDR -> Reserva: setNombre(reservaDTO.nombre)
+  GDR -> Reserva: setApellido(reservaDTO.apellido)
+  GDR -> Reserva: setTelefono(reservaDTO.telefono)
+  GDR -> Reserva: setHabitacion(habitacion)
+  end
+  GDR -> ResDAO: guardarEnBDD(Lista<Reserva>)
+  deactivate GDR
+  activate ResDAO
+  ResDAO -> GDR: reservas guardadas
+  deactivate ResDAO
+  activate GDR
+  GDR -> UIR: reservaCreada
+  deactivate GDR
+  activate UIR
+  UIR -> Conserje: Mostrar reserva confirmada
+  deactivate UIR
+  else Rechazar
+  end
+  
+else no hay habitaciones disponibles del tipo solicitado
+ UIR -> Conserje: Mostrar mensaje de error no hay habitaciones disponibles del tipo solicitado
+end
+
+
+@enduml

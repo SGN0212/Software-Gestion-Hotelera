@@ -1,0 +1,170 @@
+@startuml
+
+actor Conserje
+participant "UI- Dar de Alta de Huesped" as UIH
+participant "Gestor De Huesped" as GDH
+participant "HuespedDAO" as HuesDAO
+participant "HuespedDTO" as HuesDTO
+participant "DireccionDAO" as DirecDAO
+
+Conserje -> UIH: Solicita crear Huesped
+activate UIH
+loop mientras los datos sean incorrectos o el usuario decida cargar otro huésped
+
+    UIH -> Conserje: Mostrar pantalla vacia para ingresar datos
+    deactivate UIH
+    Conserje -> UIH: Ingresar datos
+    activate UIH
+    loop Mientras haya problemas con los datos
+     deactivate UIH
+     Conserje -> UIH: Ingresar datos
+     activate UIH
+     
+     UIH -> UIH: verificaCamposObligatorios()
+     alt campos obligarorios incompletos
+      UIH -> Conserje: Muestra mensajes sobre campos incompletos
+     else campos obligarorios completos
+      UIH -> GDH: consultarDocumento(tipoDocumento, NroDocumento)
+      deactivate UIH
+      activate GDH
+      GDH -> HuesDAO: consultarDocumento(tipoDocumento, NroDocumento)
+      deactivate GDH
+      activate HuesDAO
+      alt Husped ya existe
+        HuesDAO -> GDH: HuespedDTO
+        deactivate HuesDAO
+        activate GDH
+        GDH -> UIH: HuespedDTO
+        deactivate GDH
+        activate UIH
+        
+        UIH -> Conserje: Ya existe huesped
+        deactivate UIH
+        alt Aceptar igualmente
+          Conserje -> UIH: presiona aceptar igualmente
+          activate UIH
+          UIH -> GDH: RegistrarHuesped(HuespedDTO)
+          deactivate UIH
+          activate GDH
+          create Direccion
+          GDH -> Direccion: Direccion()
+          Direccion -> GDH: Direccion
+          GDH -> Direccion: setCalle(DireccionDTO.calle)
+          GDH -> Direccion: setNumero(DireccionDTO.numero)
+          GDH -> Direccion: setDepartamento(DireccionDTO.departamento)
+          GDH -> Direccion: setPiso(DireccionDTO.piso)
+          GDH -> Direccion: setCodigo(DireccionDTO.codigo)
+          GDH -> Direccion: setLocalidad(DireccionDTO.localidad)
+          GDH -> Direccion: setProvincia(DireccionDTO.provincia)
+          GDH -> Direccion: setPais(DireccionDTO.pais)
+          GDH -> DirecDAO: GuardarDireccion(Direccion)
+          deactivate GDH
+          activate DirecDAO
+          DirecDAO -> GDH
+          deactivate DirecDAO
+          activate GDH
+          create Huesped
+          GDH -> Huesped: Huesped()
+          Huesped -> GDH : Huesped
+          GDH -> Huesped: setApellido(HuespedDTO.apellido)
+          GDH -> Huesped: setNombre(HuespedDTO.nombre)
+          GDH -> Huesped: setTipoDocumento(HuespedDTO.tipoDocumento)
+          GDH -> Huesped: setNumeroDocumento(HuespedDTO.numeroDocumento)
+          GDH -> Huesped: setFechaNacimiento(HuespedDTO.fechaNacimiento)
+          GDH -> Huesped: setDireccionHuesped(HuespedDTO.direccionHuesped)
+          GDH -> Huesped: setTelefono(HuespedDTO.telefono)
+          GDH -> Huesped: setEmail(HuespedDTO.email)
+          GDH -> Huesped: setOcupacion(HuespedDTO.ocupacion)
+          GDH -> Huesped: setNacionalidad(HuespedDTO.nacionalidad)
+          GDH -> Huesped: setCuit(HuespedDTO.cuit)
+          GDH -> Huesped: setPosicionIVA(HuespedDTO.posicionIVA)
+          GDH -> HuesDAO: GuardarHuesped(Huesped)
+          deactivate GDH
+          activate HuesDAO
+          HuesDAO -> GDH: Huesped guardado en BD
+          deactivate HuesDAO
+          activate GDH
+          GDH -> UIH: Huesped guardado en BD
+          deactivate GDH
+          activate UIH
+          UIH -> Conserje: Mensaje de Huesped guardado exitosamente
+          UIH -> Conserje: Mensaje de consulta para seguir cargando
+          deactivate UIH
+          Conserje -> UIH: Responde
+        else presiona corregir
+            Conserje -> UIH: presiona corregir
+            activate UIH
+            UIH -> Conserje: Muestra formulario con foco en el campo documento
+            deactivate UIH
+        end
+      else huesped no existe
+        activate UIH
+        UIH -> GDH: RegistrarHuesped(HuespedDTO)
+        deactivate UIH
+        activate GDH
+        create Direccion
+        GDH -> Direccion: Direccion()
+        Direccion -> GDH: Direccion
+        GDH -> Direccion: setCalle(DireccionDTO.calle)
+        GDH -> Direccion: setNumero(DireccionDTO.numero)
+        GDH -> Direccion: setDepartamento(DireccionDTO.departamento)
+        GDH -> Direccion: setPiso(DireccionDTO.piso)
+        GDH -> Direccion: setCodigo(DireccionDTO.codigo)
+        GDH -> Direccion: setLocalidad(DireccionDTO.localidad)
+        GDH -> Direccion: setProvincia(DireccionDTO.provincia)
+        GDH -> Direccion: setPais(DireccionDTO.pais)
+        GDH -> DirecDAO: GuardarDireccion(Direccion)
+        deactivate GDH
+        activate DirecDAO
+        DirecDAO -> GDH
+        deactivate DirecDAO
+        activate GDH
+        
+        create Huesped
+        GDH -> Huesped: Huesped()
+        Huesped -> GDH : Huesped
+        GDH -> Huesped: setApellido(HuespedDTO.apellido)
+        GDH -> Huesped: setNombre(HuespedDTO.nombre)
+        GDH -> Huesped: setTipoDocumento(HuespedDTO.tipoDocumento)
+        GDH -> Huesped: setNumeroDocumento(HuespedDTO.numeroDocumento)
+        GDH -> Huesped: setFechaNacimiento(HuespedDTO.fechaNacimiento)
+        GDH -> Huesped: setDireccionHuesped(HuespedDTO.direccionHuesped)
+        GDH -> Huesped: setTelefono(HuespedDTO.telefono)
+        GDH -> Huesped: setEmail(HuespedDTO.email)
+        GDH -> Huesped: setOcupacion(HuespedDTO.ocupacion)
+        GDH -> Huesped: setNacionalidad(HuespedDTO.nacionalidad)
+        GDH -> Huesped: setCuit(HuespedDTO.cuit)
+        GDH -> Huesped: setPosicionIVA(HuespedDTO.posicionIVA)
+        GDH -> HuesDAO: GuardarHuesped(Huesped)
+        deactivate GDH
+        activate HuesDAO
+        HuesDAO -> GDH
+        deactivate HuesDAO
+        activate GDH
+        GDH -> UIH: Huesped guardado en BD
+        deactivate GDH
+        activate UIH
+        UIH -> Conserje: Mensaje de Huesped guardado exitosamente
+        deactivate UIH
+        Conserje -> UIH: Mensaje de consulta para seguir cargando
+        activate UIH
+        UIH -> Conserje: Responde
+        end
+      activate UIH
+      else presiona cancelar
+        UIH -> Conserje: Muestra mensaje de confirmacion
+        deactivate UIH
+        alt presiona SI
+        Conserje -> UIH: Presiona SI
+        activate UIH
+        UIH -> Conserje: Navega a otro CU
+        deactivate UIH
+        else presiona NO
+        Conserje -> UIH: Presiona NO
+        activate UIH
+    deactivate UIH
+    end
+  end
+end
+end
+@enduml

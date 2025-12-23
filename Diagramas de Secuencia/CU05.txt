@@ -1,0 +1,82 @@
+@startuml
+
+actor Conserje
+
+participant "UI- Mostrar Estado de Habitaciones" as UIMostrarHab
+participant "Gestor de habitaciones" as GDHab
+participant "HabitacionDAO" as HabDAO
+
+
+Conserje -> UIMostrarHab: Solicita estado de habitaciones
+activate UIMostrarHab
+loop mientras ingrese las fechas
+  UIMostrarHab -> Conserje: Mostrar campos por pantalla
+  loop Mientras ingrese "Desde fecha" invalida
+  Conserje -> UIMostrarHab: Ingresa datos "Desde fecha"
+    alt fecha invalida
+    UIMostrarHab -> Conserje: Mostrar por pantalla mensaje de error
+    end 
+  end
+  loop Mientras ingrese "Hasta fecha" invalida
+  Conserje -> UIMostrarHab: Ingresa datos "Hasta fecha"
+    alt fecha invalida
+    UIMostrarHab -> Conserje: Mostrar por pantalla mensaje de error
+    end
+  end
+end
+
+  UIMostrarHab -> GDHab: consultarEstadoHabitaciones()
+  deactivate UIMostrarHab
+  activate GDHab
+    GDHab -> HabDAO: obtenerCondicionHabitaciones()
+    deactivate GDHab
+    activate HabDAO
+    HabDAO -> GDHab: condicionHabitaciones[]
+    deactivate HabDAO
+    activate GDHab
+      loop Una vez por habitacion en servicio
+      create Habitaciones
+      GDHab -> Habitaciones:<<create>>
+      activate Habitaciones
+      GDHab -> Habitaciones: setNumero(habitacionDTO.numero)
+      GDHab -> Habitaciones: setCostoPorNoche(habitacionDTO.costoPorNoche)
+      GDHab -> Habitaciones: setCapacidad(habitacionDTO.capacidad)
+      GDHab -> Habitaciones: setEstado(habitacionDTO.Estado)
+      GDHab -> Habitaciones: setDescripcion(habitacionDTO.descripcion)
+      GDHab -> Habitaciones: setCama(habitacionDTO.cama)
+      Habitaciones -> GDHab
+      deactivate Habitaciones
+      loop Una vez por reserva de habitacion
+      create Reserva
+      GDHab -> Reserva:<<create>>
+      activate Reserva
+      GDHab -> Reserva: setIdReserva(reservaDTO.idReserva)
+      GDHab -> Reserva: setFechaInicio(reservaDTO.fechaInicio)
+      GDHab -> Reserva: setFechaFin(reservaDTO.fechaFin)
+      GDHab -> Reserva: setEstado(reservaDTO.estado)
+      GDHab -> Reserva: setNombre(reservaDTO.nombre)
+      GDHab -> Reserva: setApellido(reservaDTO.apellido)
+      GDHab -> Reserva: setTelefono(reservaDTO.telefono)
+      Reserva -> GDHab
+      deactivate Reserva
+      end
+      loop Una vez por ocupacion de habitacion
+      create Ocupacion
+      GDHab -> Ocupacion:<<create>>
+      activate Ocupacion
+      GDHab -> Ocupacion: setIdOcupacion(ocupacionDTO.idOcupacion)
+      GDHab -> Ocupacion: setFechaInicio(ocupacionDTO.fechaInicio)
+      GDHab -> Ocupacion: setFechaFin(ocupacionDTO.fechaFin)
+      GDHab -> Ocupacion: setCheckIn(ocupacionDTO.checkIn)
+      GDHab -> Ocupacion: setCheckOut(ocupacionDTO.checkOut)
+      Ocupacion -> GDHab
+      deactivate Ocupacion
+      end
+      end
+  GDHab -> UIMostrarHab: HabitacionesDTO[]
+  deactivate GDHab
+  activate UIMostrarHab
+UIMostrarHab -> Conserje: Mostrar grilla por pantalla
+deactivate UIMostrarHab
+
+@endum
